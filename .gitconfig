@@ -1,0 +1,7 @@
+[alias]
+        lc = log ORIG_HEAD.. --stat --no-merges
+        llog = log --date=local
+        tree = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative --all
+[user]
+        name = Jingyu Liu
+        email = ljy1681@gmail.com
