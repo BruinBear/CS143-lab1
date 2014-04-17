@@ -164,15 +164,15 @@ public class Catalog {
         }   
     }
 
+    public List<Table> allTables(){
+        return availableTables;
+    }
+
 
     //table wasnt found so throw exception
         throw new NoSuchElementException("Table with id " + id + " doesn't exist");
     }
     
-    public List<Table> allTables(){
-        return availableTables;
-    }
-
     /** Delete all tables from the catalog */
     public void clear() {
         // some code goes here
