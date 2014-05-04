@@ -104,12 +104,17 @@ public class Tuple implements Serializable {
      */
     public String toString() {
         // some code goes here
-    	String result = "";
-    	for(int i = 0; i < tupleFields.length - 1; i++){
-    		result = result + tupleFields[i] + "\t";
-    	}
-    	result = result + tupleFields[tupleFields.length-1] + "\n";
-    	return result;
+    	String descrip = "";
+        for (int i =0; i< tupleFields.length;i++){
+            if (tupleFields[i]==null){
+                descrip+="null"+"\t";
+            }else {
+                descrip+=tupleFields[i].toString()+"\t";
+
+            }
+        }
+        descrip=descrip.substring(0, descrip.length() - 1) + "\n";
+        return descrip;
     }
     
     /**

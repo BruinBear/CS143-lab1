@@ -20,7 +20,7 @@ public class Catalog {
 
     /**List to hold all the tables
     */
-    private Map<Integer, Table> cataMap;
+    List<Table> availableTables;
 
     /**
      * Constructor.
@@ -28,7 +28,7 @@ public class Catalog {
      */
     public Catalog() {
         // some code goes here
-        cataMap = new HashMap<Integer,Table>();
+    availableTables = new ArrayList<Table>();
     }
 
     /**
@@ -42,16 +42,18 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
-    	Integer tId=file.getId();
-        if(name.equals(null)){
-            throw new IllegalArgumentException("name cannot be null");
-        } else {
-            if (cataMap.containsKey(tId)){
-                cataMap.remove(tId);
-            }
-            Table t=new Table(file, name, pkeyField);
-            cataMap.put(tId, t);
-        }
+    if(name == null){
+        throw new IllegalArgumentException("name cannot be null");
+    }
+
+    Table newTable = new Table(file, name, pkeyField);
+
+    for(Table temp : availableTables){
+        if(temp.getTableName().equals(name)){
+            availableTables.remove(temp);       
+        }   
+    }
+    availableTables.add(newTable);
     }
 
     public void addTable(DbFile file, String name) {
@@ -78,13 +80,14 @@ public class Catalog {
 
     //iterate through all table to see if it exsits.
     //if it does, return the id
-    	for (Table t : cataMap.values()){
-            if (t.getTableName().equals(name)){
-                return t.getFile().getId();
-            }
-        }
-
-        throw new NoSuchElementException("Noe table has this name");
+    for(Table temp : availableTables){
+        if(temp.getTableName().equals(name)){
+            return temp.getFile().getId();      
+        }   
+    }
+    
+    //table wasnt found so throw exception
+        throw new NoSuchElementException("Table with name " + name + " doesn't exist");
     }
 
     /**
@@ -96,11 +99,15 @@ public class Catalog {
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
 
-    	if (cataMap.containsKey(tableid)){
-            return cataMap.get(tableid).getFile().getTupleDesc();
-        }else{
-            throw new NoSuchElementException("No table has this tableid");
-        }
+    //see if table with specified id exists
+    for(Table temp : availableTables){
+        if(temp.getFile().getId() == tableid){
+            return temp.getFile().getTupleDesc();       
+        }   
+    }
+
+    //table wasnt found so throw exception
+        throw new NoSuchElementException("Table with id " + tableid + " doesn't exist");
     }
 
     /**
@@ -110,54 +117,66 @@ public class Catalog {
      *     function passed to addTable
      */
     public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {
-    	// some code goes here
-        if (cataMap.containsKey(tableid)){
-            return cataMap.get(tableid).getFile();
-        }else{
-            throw new NoSuchElementException("no table has this tableid");
-        }
+        // some code goes here
+
+    //see if table with specified id exists
+    for(Table temp : availableTables){
+        if(temp.getFile().getId() == tableid){
+            return temp.getFile();      
+        }   
+    }
+
+    //table wasnt found so throw exception
+        throw new NoSuchElementException("Table with id " + tableid + " doesn't exist");    
+
     }
 
     public String getPrimaryKey(int tableid) {
 
-    	//see if table with specified id exists
-    	if (cataMap.containsKey(tableid)){
-            return cataMap.get(tableid).getPrimaryKey();
-        }else{
-            throw new NoSuchElementException("no table has this tableid");
-        }
+    //see if table with specified id exists
+    for(Table temp : availableTables){
+        if(temp.getFile().getId() == tableid){
+            return temp.getPrimaryKey();     
+        }   
     }
 
+    //table wasnt found so throw exception
+        throw new NoSuchElementException("Table with id " + tableid + " doesn't exist");
+    }
 
     public Iterator<Integer> tableIdIterator() {
 
-        return cataMap.keySet().iterator();
 
+        List<Integer> ids = new ArrayList<Integer>();
+        for(Table temp : availableTables){
+                ids.add(temp.getFile().getId());
+        }
+        return ids.iterator();
     }
 
     public String getTableName(int id) {
-    	 if (cataMap.containsKey(id)){
-             return cataMap.get(id).getTableName();
-         }else{
-             throw new NoSuchElementException("no table has this id");
-         }
-    }
-    
-    public List<Table> allTables(){
-        List<Table> tableList = new LinkedList<Table>();
-        Collection<Table> catalogMapVals = cataMap.values();
-        
-        for(Table t : catalogMapVals) {
-            tableList.add(t);
-        }
-        return tableList;
-    
+        // some code goes here
+
+    //see if table with specified id exists
+    for(Table temp : availableTables){
+        if(temp.getFile().getId() == id){
+            return temp.getTableName();     
+        }   
     }
 
+    public List<Table> allTables(){
+        return availableTables;
+    }
+
+
+    //table wasnt found so throw exception
+        throw new NoSuchElementException("Table with id " + id + " doesn't exist");
+    }
+    
     /** Delete all tables from the catalog */
     public void clear() {
         // some code goes here
-    	cataMap.clear();
+    availableTables.clear();
     }
     
     /**

@@ -12,7 +12,7 @@ public class TupleDesc implements Serializable {
 	 * Storage of schema type and name
 	 */
 	
-	private List<TDItem> SchemaList;
+    private TDItem[] tdArr;
     /**
      * A help class to facilitate organizing the information of each field
      * */
@@ -47,8 +47,10 @@ public class TupleDesc implements Serializable {
      * */
     public Iterator<TDItem> iterator() {
         // some code goes here
-    	
-        return SchemaList.iterator();
+    	List<TDItem> tdList = Arrays.asList(tdArr);
+    	Iterator<TDItem> iter = tdList.iterator();
+
+        return iter;
     }
 
     private static final long serialVersionUID = 1L;
@@ -66,10 +68,16 @@ public class TupleDesc implements Serializable {
      */
     public TupleDesc(Type[] typeAr, String[] fieldAr) {
         // some code goes here
-    	int length = typeAr.length;
-    	SchemaList = new ArrayList<TDItem>();
-    	for(int i = 0; i < length; i++){
-    		SchemaList.add(new TDItem(typeAr[i], fieldAr[i]));
+    	if(typeAr.length == fieldAr.length)
+    	{
+    		tdArr = new TupleDesc.TDItem[typeAr.length];
+    		for(int i=0; i<tdArr.length;i++)						//populate the array
+    			tdArr[i] = new TDItem(typeAr[i], fieldAr[i]);		//using the TDItem constructor to insert the values
+    	}
+    	else
+    	{
+    		//temporarily use console out put
+    		System.out.println("Type arr and Field arr are of different length!");
     	}
     }
 
@@ -83,11 +91,9 @@ public class TupleDesc implements Serializable {
      */
     public TupleDesc(Type[] typeAr) {
         // some code goes here
-    	int length = typeAr.length;
-    	SchemaList = new ArrayList<TDItem>();
-    	for(int i = 0; i < length; i++){
-    		SchemaList.add(new TDItem(typeAr[i], null));
-    	}
+    	tdArr = new TupleDesc.TDItem[typeAr.length];
+    	for(int i=0; i<tdArr.length;i++)							//populate the array
+			tdArr[i] = new TDItem(typeAr[i], "");	
     }
 
     /**
@@ -95,7 +101,7 @@ public class TupleDesc implements Serializable {
      */
     public int numFields() {
         // some code goes here
-        return SchemaList.size();
+    	return this.tdArr.length;  
     }
 
     /**
@@ -109,11 +115,10 @@ public class TupleDesc implements Serializable {
      */
     public String getFieldName(int i) throws NoSuchElementException {
         // some code goes here
-    	if(i < 0 || i>numFields()){
-    		throw new NoSuchElementException("Invalid index i");
-    	}
-    	
-        return SchemaList.get(i).fieldName;
+    	if(i > this.numFields() - 1)				// -1 because the one is the length and the other one is the index number
+    		throw new NoSuchElementException("Invalid index number, No such element!");
+    	else
+    		return this.tdArr[i].fieldName; 
     }
 
     /**
@@ -128,11 +133,10 @@ public class TupleDesc implements Serializable {
      */
     public Type getFieldType(int i) throws NoSuchElementException {
         // some code goes here
-    	if(i < 0 || i > numFields()){
-    		throw new NoSuchElementException("Invalid index i");
-    	}
-    	
-        return SchemaList.get(i).fieldType;
+    	if(i > this.numFields() -1)
+    		throw new NoSuchElementException("Invalid index number, No such element!");
+    	else
+    		return this.tdArr[i].fieldType;  
     }
 
     /**
@@ -146,13 +150,15 @@ public class TupleDesc implements Serializable {
      */
     public int fieldNameToIndex(String name) throws NoSuchElementException {
         // some code goes here
-    	for(TDItem tdi : SchemaList){
-    		int index = SchemaList.indexOf(tdi);
-    		
-    		if(tdi.fieldName != null && tdi.fieldName.equals(name))
-    			return index;
+    	if(name == null)
+    		throw new NoSuchElementException("Null string is invalid");
+    	
+    	for(int i=0; i<tdArr.length; i++)
+    	{
+    		if(tdArr[i].fieldName != null && tdArr[i].fieldName.equals(name))
+    			return i;
     	}
-    	throw new NoSuchElementException("Can't find field name with "+ name +".\n");
+    	throw new NoSuchElementException("Did not find a match with that name!");
     }
 
     /**
@@ -161,14 +167,12 @@ public class TupleDesc implements Serializable {
      */
     public int getSize() {
         // some code goes here
-        int sum = 0;
-        for(TDItem tdi : SchemaList){
-        	if(tdi.fieldType == Type.INT_TYPE)
-        		sum += 4;
-        	else
-        		sum += tdi.fieldType.getLen();
-        }
-        return sum;
+    	int size = 0;
+    	for(TDItem o:tdArr)
+    	{
+    		size += o.fieldType.getLen();
+    	}
+        return size;
     }
 
     /**
@@ -217,25 +221,20 @@ public class TupleDesc implements Serializable {
      */
     public boolean equals(Object o) {
         // some code goes here
-    	if(o instanceof TupleDesc){
-    		TupleDesc oCast = (TupleDesc) o;
-    		if(this.numFields()!= oCast.numFields()){
-    			return false;
+    	if(o instanceof TupleDesc)							//if they are of same class
+    	{
+    		TupleDesc td2 = (TupleDesc)o;
+    		if(td2.numFields() != this.numFields())
+    			return false;								//test they are of same length
+    		for(int i=0; i<td2.numFields(); i++)
+    		{
+    			if(td2.getFieldType(i) != this.getFieldType(i))
+    				return false;							//test if each entry has the same type
     		}
-    		else{
-    			for(int i = 0; i < numFields(); i++)
-    			{
-    				if(!this.getFieldType(i).equals(oCast.getFieldType(i))){
-    					return false;
-    				}
-    			}
-    			return true;
-    		}
+    		return true;
     	}
-    	else{
+    	else
     		return false;
-    
-    	}
     }
     
     public int hashCode() {
@@ -254,23 +253,17 @@ public class TupleDesc implements Serializable {
     public String toString() {
         // some code goes here
     	String result = "";
-    	String type = "";
-        for(int i = 0; i < this.numFields()-1; i++){
-        	
-        	if(this.getFieldType(i) == Type.INT_TYPE){
-        		type = "INT";
-        	} else {
-        		type = "STRING";
-        	}
-        	result = result + type + "(" + this.getFieldName(i) + "), "; 
-        }
-        int finalIndex = this.numFields()-1;
-        if(this.getFieldType(finalIndex) == Type.INT_TYPE){
-    		type = "INT";
-    	} else {
-    		type = "STRING";
+    	for(int i=0; i<tdArr.length; i++)
+    	{
+    		String tmp = "";
+    		if(i == tdArr.length-1)
+    			tmp = tdArr[i].fieldType + "[" + i + "](" + tdArr[i].fieldName + "[" + i + "])";
+    		else
+    			tmp = tdArr[i].fieldType + "[" + i + "](" + tdArr[i].fieldName + "[" + i + "]),";
+    		
+    		result+=tmp;
     	}
-        result = result + type + "(" + this.getFieldName(finalIndex) + ")"; 
         return result;
+    
     }
 }

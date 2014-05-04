@@ -1,0 +1,78 @@
+Name1: Jingyu Liu 404193267
+Name2: Dennis Grijalva 104118057
+
+CS 143 LAB1 REPORT
+======================================================================
+TupleDesc.java
+I used an array of TDItem to keep an array of type and fieldname. Array is used because it is easy for iterator function.(aslist()) 
+
+Constructor: I create a same length TDItem array and then iterate through input array and update TDItem array.
+
+getFieldName and getFieldType check if i is in bound, return Type or Name when in bound, throw NoSuchElementException when not.
+
+fieldNameToIndex iterates through the TDItem array and returns matched name or throws NoSuchElementException.
+
+TupleDesc takes in two TDItem arrays, and create merged type name arrays and then use the constructor.
+
+equals: check size and each fieldtype in array
+----------------------------------------------------------------------
+Tuple.java: 
+Private:
+private Field[] tupleFields;//store fields
+private TupleDesc tupleSchema;//store schema
+private RecordId recordId;//store related recordId for this tuple
+
+Tuple is implemented in the same way as tupleDesc.
+----------------------------------------------------------------------
+Catalog.java
+Private:
+and hashmap between FileId and table
+Check if FileId is in use of the map if not add FileId and create a new table and put them into the map.
+
+The rest of the class  uses tableid for map lookup and return related attributes from the return Table class method which will look up certain attributes related to the table.
+----------------------------------------------------------------------
+BufferPool.java
+Private:
+A ConcurrentHashMap stores pageId and pages. pageId points to pages. MaxSize will monitor the growing number of the pages.
+
+getPage will try find the page with pid and if not found create a new page and added it to the map. if it exceeds the maximum possible pages, it throws DbException.
+----------------------------------------------------------------------
+HeapPage.java
+isSlotUsed we find the byte and bit index. then we find the header position where we shift the bit vector right bitIndex times and and with 1 to find if the slot is used or not.
+
+getNumEmptySlots basically calling isSlotUsed on 0-numSlots
+
+Iterator: create a new arraylist from the used slots return a iterator to a HeapPageIterator<Tuple> made from the tupleInUse arraylist.
+
+RecordId class:
+Private:
+pageid and tuplenumber are stored for lookup.
+
+equals(Object o) checks if recordId is identical and also tuplenumber is equal or not.
+---------------------------------------------------------------------
+HeapFile class:
+Private Var: File m_file, TupleDesc m_tud for storing the schema.
+
+ReadPage is implemented with a randomAccessFile with read permission and seek the offset found by pagenumber and read one page then close. It then returns that page read. It throws given exceptions.
+
+Iterator: Created a new HeapFileIterator class which implements the DbFileIterator
+it has overidden open() hasNext() next() methods, and Tuple iterator i, transactionId, a page number for current page in the file and HeapFile f.
+next() will check to see if current page can fit next tuple, if not add a new page and set iterator for that page, it then return the iterator. In case where page number at the limit throw NoSuchElementException.
+	
+	getTupleList is a class method for HeapFileIterator which we used to find a list of tuples from page
+---------------------------------------------------------------------
+SeqScan
+private:
+    private TransactionId m_transac; 
+    private int m_tid;
+    private String m_alias;//for add in to TupleDesc Name
+    private DbFileIterator m_itr;//iterate through the table
+
+Constructor initialize m_itr with the iterator of m_transac from file with table id m_tid from the getCatalog.
+
+getTupleDesc append alias to the field name.
+----------------------------------------------------------------------
+Problems:
+didn't check the usage of hash code.
+
+
